@@ -15,9 +15,11 @@ player_bp = Blueprint("player", __name__, url_prefix="/player")
 @swag_from({'tags': ['Player'], 'responses': {201: {}}})
 def add_player():
     player_data = request.get_json()
+
     # data validation
     validator = TypeAdapter(PlayerSchema)
     valid_player = validator.validate_python(player_data)
+
     player = create_player(dict(valid_player))
     return make_response(player.to_dict(), 201)
 
@@ -47,21 +49,25 @@ def delete_player_by_id(id: int):
 @player_bp.get("/get_client_config/<string:player_id>")
 @swag_from({'tags': ['Player'], 'responses': {200: {}}})
 def get_player_and_update_campaigns(player_id: str):
+
     # 1. get player
     player = get_player_by_player_id(player_id)
+
     # 2. get running campaigns
-    running_campaigns = get_enabled_campaigns()
+    enabled_campaigns = get_enabled_campaigns()
+
     # 3. check if matchers match player info
     # compare matchers from all running campaigns with player info
-    for campaign in running_campaigns:
-        matcher = get_campaign_matchers(campaign.id)
-        # matcher conditions
+    for campaign in enabled_campaigns:
+        matchers = get_campaign_matchers(campaign.id)
+        # check matchers
         conditions = [
-            lambda p: matcher.level.min <= p.level <= matcher.level.max,
-            lambda p: p.country in matcher.has.country,
-            lambda p: all(item in p.inventory for item in matcher.has.items),
-            lambda p: all(item not in p.inventory for item in matcher.does_not_have.items)
+            lambda p: matchers.level.min <= p.level <= matchers.level.max,
+            lambda p: p.country in matchers.has.country,
+            lambda p: all(item in p.inventory for item in matchers.has.items),
+            lambda p: all(item not in p.inventory for item in matchers.does_not_have.items)
         ]
+
         # 4. if matches, update player active campaigns
         if all(condition(player) for condition in conditions):
             player = update_player_campaigns(player.id, campaign)

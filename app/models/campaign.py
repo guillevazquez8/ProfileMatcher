@@ -1,4 +1,4 @@
-from app import db
+from app.app import db
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -22,12 +22,21 @@ class Matchers(db.Model):
     __tablename__ = 'matchers'
 
     id = Column(Integer, primary_key=True)
-    level_min = Column(Integer)
-    level_max = Column(Integer)
     campaign_id = Column(Integer, ForeignKey('campaigns.id', ondelete="CASCADE"), nullable=False)
     campaign = db.relationship('Campaign', back_populates='matchers')
+    level = db.relationship("Level", uselist=False, back_populates="matchers")
     have = db.relationship('Has', uselist=False, back_populates='matchers')
     not_have = db.relationship('DoesNotHave', uselist=False, back_populates='matchers')
+
+
+class Level(db.Model):
+    __tablename__ = "levels"
+
+    id = Column(Integer, primary_key=True)
+    min = Column(Integer)
+    max = Column(Integer)
+    matchers_id = Column(Integer, ForeignKey("matchers.id", ondelete="CASCADE"), nullable=False)
+    matchers = db.relationship('Matchers', back_populates='has')
 
 
 class Has(db.Model):

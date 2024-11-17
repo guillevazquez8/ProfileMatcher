@@ -1,4 +1,4 @@
-from app import db
+from app.app import db
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from sqlalchemy.dialects.postgresql import JSON
@@ -32,6 +32,14 @@ class Player(db.Model):
     active_campaigns = db.relationship("Campaign")
 
 
+class CampaignPlayer(db.Model):
+    __tablename__ = "campaign_player"
+
+    id = Column(Integer, primary_key=True)
+    campaign_id = Column(Integer, ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False)
+    player_id = Column(Integer, ForeignKey("players.id", ondelete="CASCADE"), nullable=False)
+
+
 class Device(db.Model):
     __tablename__ = 'devices'
 
@@ -57,6 +65,6 @@ class Inventory(db.Model):
 class Clan(db.Model):
     __tablename__ = 'clans'
 
-    id = Column(String, primary_key=True)
-    name = Column(String)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
     players = db.relationship('Player', back_populates='clan')

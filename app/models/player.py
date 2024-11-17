@@ -2,9 +2,10 @@ from app.app import db
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy_serializer import SerializerMixin
 
 
-class Player(db.Model):
+class Player(db.Model, SerializerMixin):
     __tablename__ = 'players'
 
     id = Column(Integer, primary_key=True)
@@ -25,14 +26,13 @@ class Player(db.Model):
     birthdate = Column(DateTime)
     gender = Column(String)
     _customfield = Column(String)
-    devices = db.relationship('Device', uselist=False, back_populates='player')
-    inventory = db.relationship('Inventory', uselist=False, back_populates='player')
+    devices = db.relationship('Device')
+    inventory = db.relationship('Inventory', uselist=False)
     clan_id = Column(Integer, ForeignKey('clans.id', ondelete="SET NULL"))
-    clan = db.relationship('Clan', back_populates='player')
-    active_campaigns = db.relationship("Campaign")
+    active_campaigns = db.relationship("Campaign", secondary='campaign_player')
 
 
-class CampaignPlayer(db.Model):
+class CampaignPlayer(db.Model, SerializerMixin):
     __tablename__ = "campaign_player"
 
     id = Column(Integer, primary_key=True)
@@ -40,7 +40,7 @@ class CampaignPlayer(db.Model):
     player_id = Column(Integer, ForeignKey("players.id", ondelete="CASCADE"), nullable=False)
 
 
-class Device(db.Model):
+class Device(db.Model, SerializerMixin):
     __tablename__ = 'devices'
 
     id = Column(Integer, primary_key=True)
@@ -48,10 +48,9 @@ class Device(db.Model):
     carrier = Column(String)
     firmware = Column(String)
     player_id = Column(Integer, db.ForeignKey('players.id', ondelete="CASCADE"), nullable=False)
-    player = db.relationship('Player', back_populates='devices')
 
 
-class Inventory(db.Model):
+class Inventory(db.Model, SerializerMixin):
     __tablename__ = 'inventories'
 
     id = Column(Integer, primary_key=True)
@@ -59,12 +58,11 @@ class Inventory(db.Model):
     coins = Column(Integer)
     items = Column(JSON)
     player_id = Column(Integer, ForeignKey('players.id', ondelete="CASCADE"), nullable=False)
-    player = db.relationship('Player', back_populates='inventory')
 
 
-class Clan(db.Model):
+class Clan(db.Model, SerializerMixin):
     __tablename__ = 'clans'
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
-    players = db.relationship('Player', back_populates='clan')
+    players = db.relationship('Player')

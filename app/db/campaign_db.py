@@ -62,9 +62,9 @@ def get_enabled_campaigns():
     return enabled_campaigns
 
 
-def get_campaign_matcher(campaign_id):
+def get_campaign_matchers(campaign_id):
     campaign = get_campaign(campaign_id)
-    return campaign.matcher
+    return campaign.matchers
 
 
 def update_campaign(id: int, data: dict):

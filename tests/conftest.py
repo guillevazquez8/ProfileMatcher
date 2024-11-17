@@ -1,18 +1,17 @@
 import pytest
 from app.app import create_app, db
+from config import config_test
 
 
 @pytest.fixture()
 def app():
-    app = create_app({
-        "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": 'postgresql://guille:celta@localhost:5432/profile_matcher_test'
-    })
+    app = create_app(config_test)
     yield app
 
 @pytest.fixture()
 def client(app, request):
     test_client = app.test_client()
+    test_client.headers = {"Content-Type": "application/json"}
     app.app_context().push()
     db.drop_all()
     db.create_all()

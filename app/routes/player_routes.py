@@ -1,9 +1,10 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, make_response, jsonify
 from app.db.player_db import *
-from app.db.campaign_db import get_enabled_campaigns, get_campaign_matcher
+from app.db.campaign_db import get_enabled_campaigns, get_campaign_matchers
 from app.schemas.player_schema import PlayerSchema
 from flask_pydantic import validate
 from flasgger.utils import swag_from
+from pydantic import TypeAdapter
 
 
 player_bp = Blueprint("player", __name__, url_prefix="/player")
@@ -12,9 +13,16 @@ player_bp = Blueprint("player", __name__, url_prefix="/player")
 @player_bp.post("")
 @validate()
 @swag_from({'tags': ['Player'], 'responses': {201: {}}})
-def add_player(player_data: PlayerSchema):
-    player = create_player(dict(player_data))
-    return player
+def add_player():
+    player_data = request.get_json()
+    # data validation
+    validator = TypeAdapter(PlayerSchema)
+    valid_player = validator.validate_python(player_data)
+    player = create_player(dict(valid_player))
+    try:
+        return make_response(player.to_dict(), 201)
+    except Exception as e:
+        raise e
 
 
 @player_bp.get("/{id}")
@@ -49,7 +57,7 @@ def get_player_and_update_campaigns(player_id: str):
     # 3. check if matchers match player info
     # compare matchers from all running campaigns with player info
     for campaign in running_campaigns:
-        matcher = get_campaign_matcher(campaign.id)
+        matcher = get_campaign_matchers(campaign.id)
         # matcher conditions
         conditions = [
             lambda p: matcher.level.min >= p.level <= matcher.level.max,

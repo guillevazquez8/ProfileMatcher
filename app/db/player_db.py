@@ -5,40 +5,44 @@ import uuid
 
 def create_player(player_data: dict):
     # create player
-    new_player = Player(player_id=uuid.uuid1())
-    for key, value in player_data.items():
-        if hasattr(new_player, key):
-            setattr(new_player, key, value)
-    db.add(new_player)
-    db.commit()
-    # create clan
-    if player_data['clan']:
-        clan = Clan(name=player_data['clan']['name'])
-        db.add(clan)
-        db.commit()
-        new_player.clan_id = clan.id
-        db.commit()
-    # create device
-    for device in player_data['devices']:
-        new_device = Device(
-            player_id=new_player.id,
-            model=device['model'],
-            carrier=device['carrier'],
-            firmware=device['firmware']
-        )
-        db.add(new_device)
-        db.commit()
-    # create inventory
-    if player_data['inventory']:
-        new_inventory = Inventory(
-            player_id=new_player.id,
-            cash=player_data['inventory']['cash'],
-            coins=player_data['inventory']['coins'],
-            items=player_data['inventory']['items']
-        )
-        db.add(new_inventory)
-        db.commit()
-    return new_player
+    try:
+        player_data['player_id'] = uuid.uuid1()
+        player_copy = player_data.copy()
+        for k in ('devices', 'clan', 'inventory'):
+            player_data.pop(k, None)
+        new_player = Player(**player_data)
+        db.session.add(new_player)
+        db.session.commit()
+        # create clan
+        if player_copy['clan']:
+            clan = Clan(name=player_copy['clan'].name)
+            db.session.add(clan)
+            db.session.commit()
+            new_player.clan_id = clan.id
+            db.session.commit()
+        # create device
+        for device in player_copy['devices']:
+            new_device = Device(
+                player_id=new_player.id,
+                model=device.model,
+                carrier=device.carrier,
+                firmware=device.firmware
+            )
+            db.session.add(new_device)
+            db.session.commit()
+        # create inventory
+        if player_copy['inventory']:
+            new_inventory = Inventory(
+                player_id=new_player.id,
+                cash=player_copy['inventory'].cash,
+                coins=player_copy['inventory'].coins,
+                items=player_copy['inventory'].items
+            )
+            db.session.add(new_inventory)
+            db.session.commit()
+        return new_player
+    except Exception as e:
+        raise e
 
 
 def get_player(id: int):

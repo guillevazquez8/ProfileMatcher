@@ -3,6 +3,7 @@ from flask_pydantic import validate
 from app.db.campaign_db import *
 from app.schemas.campaign_schema import CampaignSchema
 from flasgger.utils import swag_from
+from pydantic import TypeAdapter
 
 
 campaign_bp = Blueprint("campaign", __name__, url_prefix="/campaign")
@@ -11,8 +12,12 @@ campaign_bp = Blueprint("campaign", __name__, url_prefix="/campaign")
 @campaign_bp.post("")
 @validate()
 @swag_from({'tags': ['Campaign'], 'responses': {201: {}}})
-def add_campaign(campaign_data: CampaignSchema):
-    campaign = create_campaign(dict(campaign_data))
+def add_campaign():
+    campaign_data = request.get_json()
+    # data validation
+    validator = TypeAdapter(CampaignSchema)
+    valid_campaign = validator.validate_python(campaign_data)
+    campaign = create_campaign(dict(valid_campaign))
     return campaign
 
 

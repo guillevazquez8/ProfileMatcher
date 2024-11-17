@@ -1,4 +1,6 @@
-from app.models.player import Player, Device, Clan, Inventory
+from pydantic import ValidationError
+
+from app.models.player import Player, Device, Clan
 from app.app import db
 import uuid
 
@@ -8,7 +10,7 @@ def create_player(player_data: dict):
     try:
         player_data['player_id'] = uuid.uuid1()
         player_copy = player_data.copy()
-        for k in ('devices', 'clan', 'inventory'):
+        for k in ('devices', 'clan'):
             player_data.pop(k, None)
         new_player = Player(**player_data)
         db.session.add(new_player)
@@ -30,16 +32,6 @@ def create_player(player_data: dict):
             )
             db.session.add(new_device)
             db.session.commit()
-        # create inventory
-        if player_copy['inventory']:
-            new_inventory = Inventory(
-                player_id=new_player.id,
-                cash=player_copy['inventory'].cash,
-                coins=player_copy['inventory'].coins,
-                items=player_copy['inventory'].items
-            )
-            db.session.add(new_inventory)
-            db.session.commit()
         return new_player
     except Exception as e:
         raise e
@@ -60,22 +52,22 @@ def update_player(id: int, data: dict):
     for key, value in data.items():
         if hasattr(player, key):
             setattr(player, key, value)
-    db.commit()
+    db.session.commit()
     return player
 
 
 def delete_player(id: int):
     player = get_player(id)
-    db.delete(player)
-    db.commit()
+    db.session.delete(player)
+    db.session.commit()
     return player
 
 
-def update_player_campaigns(id: int, campaign_id: int):
+def update_player_campaigns(id: int, campaign: dict):
     player = get_player(id)
     active_campaigns = player.active_campaigns
-    if campaign_id not in player.active_campaigns:
-        active_campaigns.append(campaign_id)
+    if campaign not in player.active_campaigns:
+        active_campaigns.append(campaign)
     player.active_campaigns = active_campaigns
     db.session.commit()
     return player

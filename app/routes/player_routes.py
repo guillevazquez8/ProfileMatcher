@@ -19,35 +19,32 @@ def add_player():
     validator = TypeAdapter(PlayerSchema)
     valid_player = validator.validate_python(player_data)
     player = create_player(dict(valid_player))
-    try:
-        return make_response(player.to_dict(), 201)
-    except Exception as e:
-        raise e
+    return make_response(player.to_dict(), 201)
 
 
-@player_bp.get("/{id}")
+@player_bp.get("/<int:id>")
 @swag_from({'tags': ['Player'], 'responses': {200: {}}})
 def get_player_by_id(id: int):
     player = get_player(id)
-    return player
+    return make_response(player.to_dict())
 
 
-@player_bp.put("/{id}")
+@player_bp.put("/<int:id>")
 @swag_from({'tags': ['Player'], 'responses': {200: {}}})
 def update_player_by_id(id: int):
     data = request.get_json()
     player = update_player(id, data)
-    return player
+    return make_response(player.to_dict())
 
 
-@player_bp.delete("/{id}")
+@player_bp.delete("/<int:id>")
 @swag_from({'tags': ['Player'], 'responses': {200: {}}})
 def delete_player_by_id(id: int):
     player = delete_player(id)
-    return player
+    return make_response(player.to_dict())
 
 
-@player_bp.get("/get_client_config/{player_id}")
+@player_bp.get("/get_client_config/<string:player_id>")
 @swag_from({'tags': ['Player'], 'responses': {200: {}}})
 def get_player_and_update_campaigns(player_id: str):
     # 1. get player
@@ -60,12 +57,12 @@ def get_player_and_update_campaigns(player_id: str):
         matcher = get_campaign_matchers(campaign.id)
         # matcher conditions
         conditions = [
-            lambda p: matcher.level.min >= p.level <= matcher.level.max,
-            lambda p: p.country in matcher.have.country,
-            lambda p: all(item in p.inventory.items for item in matcher.have.items),
-            lambda p: all(item not in p.inventory.items for item in matcher.not_have.items)
+            lambda p: matcher.level.min <= p.level <= matcher.level.max,
+            lambda p: p.country in matcher.has.country,
+            lambda p: all(item in p.inventory for item in matcher.has.items),
+            lambda p: all(item not in p.inventory for item in matcher.does_not_have.items)
         ]
         # 4. if matches, update player active campaigns
         if all(condition(player) for condition in conditions):
-            player = update_player_campaigns(player.id, campaign.id)
-    return player
+            player = update_player_campaigns(player.id, campaign)
+    return make_response(player.to_dict())

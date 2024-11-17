@@ -27,7 +27,7 @@ class Player(db.Model, SerializerMixin):
     gender = Column(String)
     _customfield = Column(String)
     devices = db.relationship('Device')
-    inventory = db.relationship('Inventory', uselist=False)
+    inventory = Column(JSON)
     clan_id = Column(Integer, ForeignKey('clans.id', ondelete="SET NULL"))
     active_campaigns = db.relationship("Campaign", secondary='campaign_player')
 
@@ -50,14 +50,14 @@ class Device(db.Model, SerializerMixin):
     player_id = Column(Integer, db.ForeignKey('players.id', ondelete="CASCADE"), nullable=False)
 
 
-class Inventory(db.Model, SerializerMixin):
+"""class Inventory(db.Model, SerializerMixin):
     __tablename__ = 'inventories'
 
     id = Column(Integer, primary_key=True)
     cash = Column(Integer)
     coins = Column(Integer)
     items = Column(JSON)
-    player_id = Column(Integer, ForeignKey('players.id', ondelete="CASCADE"), nullable=False)
+    player_id = Column(Integer, ForeignKey('players.id', ondelete="CASCADE"), nullable=False)"""
 
 
 class Clan(db.Model, SerializerMixin):

@@ -1,5 +1,3 @@
-import json
-
 
 class TestPlayer:
 
@@ -42,5 +40,15 @@ class TestPlayer:
         }
         resp = client.post("/player", json=player, headers=client.headers)
         assert resp.status_code == 201
+
+    def test_get_player(self, client, create_player_and_campaign):
+        id = create_player_and_campaign.id
+        resp = client.get(f"/player/{id}", headers=client.headers)
+        assert resp.status_code == 200
+
+    def test_get_player_and_update_campaigns(self, client, create_player_and_campaign):
+        player_id = create_player_and_campaign.player_id
+        resp = client.get(f"/player/get_client_config/{player_id}", headers=client.headers)
+        assert resp.status_code == 200
         resp_json = resp.json
         assert resp_json

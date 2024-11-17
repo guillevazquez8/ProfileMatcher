@@ -4,47 +4,46 @@ from app.models.campaign import Campaign, Matchers, Has, DoesNotHave, Level
 
 def create_campaign(campaign_data: dict):
     # create campaign
-    new_campaign = Campaign(
-        game=campaign_data['game'],
-        name=campaign_data['name']
-    )
-    for key, value in campaign_data.items():
-        if hasattr(new_campaign, key):
-            setattr(new_campaign, key, value)
-    db.add(new_campaign)
-    db.commit()
-    # create matcher
-    if campaign_data['matchers']:
-        matchers = Matchers(campaign_id=new_campaign.id)
-        db.add(matchers)
-        db.commit()
-        # create level
-        if campaign_data['matchers']['level']:
-            level = Level(
-                matchers_id=matchers.id,
-                max=campaign_data['matchers']['level']['max'],
-                min=campaign_data['matchers']['level']['min']
-            )
-            db.add(level)
-            db.commit()
-        # create has
-        if campaign_data['matchers']['has']:
-            has = Has(
-                matchers_id=matchers.id,
-                country=campaign_data['matchers']['has']['country'],
-                items=campaign_data['matchers']['has']['items']
-            )
-            db.add(has)
-            db.commit()
-        # create does_not_have
-        if campaign_data['matchers']['does_not_have']:
-            does_not_have = DoesNotHave(
-                matchers_id=matchers.id,
-                items=campaign_data['matchers']['does_not_have']['items']
-            )
-            db.add(does_not_have)
-            db.commit()
-    return new_campaign
+    try:
+        campaign_copy = campaign_data.copy()
+        campaign_data.pop('matchers')
+        new_campaign = Campaign(**campaign_data)
+        db.session.add(new_campaign)
+        db.session.commit()
+        # create matcher
+        if campaign_copy['matchers']:
+            matchers = Matchers(campaign_id=new_campaign.id)
+            db.session.add(matchers)
+            db.session.commit()
+            # create level
+            if campaign_copy['matchers'].level:
+                level = Level(
+                    matchers_id=matchers.id,
+                    max=campaign_copy['matchers'].level.max,
+                    min=campaign_copy['matchers'].level.min
+                )
+                db.session.add(level)
+                db.session.commit()
+            # create has
+            if campaign_copy['matchers'].has:
+                has = Has(
+                    matchers_id=matchers.id,
+                    country=campaign_copy['matchers'].has.country,
+                    items=campaign_copy['matchers'].has.items
+                )
+                db.session.add(has)
+                db.session.commit()
+            # create does_not_have
+            if campaign_copy['matchers'].does_not_have:
+                does_not_have = DoesNotHave(
+                    matchers_id=matchers.id,
+                    items=campaign_copy['matchers'].does_not_have.items
+                )
+                db.session.add(does_not_have)
+                db.session.commit()
+        return new_campaign
+    except Exception as e:
+        raise e
 
 
 def get_campaign(campaign_id):

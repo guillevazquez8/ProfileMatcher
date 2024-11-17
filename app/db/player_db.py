@@ -13,14 +13,17 @@ def create_player(player_data: dict):
         # pop devices and clan as they are instances of pydantic schema and not part of player table
         for k in ('devices', 'clan'):
             player_data.pop(k, None)
+
         # 2. create new player
         new_player = Player(**player_data)
         db.session.add(new_player)
+        db.session.flush()
 
         # 2. create clan if not null
         if player_copy['clan']:
             new_clan = Clan(name=player_copy['clan'].name)
             db.session.add(new_clan)
+            db.session.flush()
             new_player.clan_id = new_clan.id
 
         # 3. create device if not null

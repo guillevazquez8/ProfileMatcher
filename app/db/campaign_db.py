@@ -8,14 +8,17 @@ def create_campaign(campaign_data: dict):
         # 1. format campaign_data to create a campaign object
         campaign_copy = campaign_data.copy()
         campaign_data.pop('matchers')
+
         # 2. create new campaign
         new_campaign = Campaign(**campaign_data)
         db.session.add(new_campaign)
+        db.session.flush()
 
         # 3. create matcher if not null
         if campaign_copy['matchers']:
             new_matchers = Matchers(campaign_id=new_campaign.id)
             db.session.add(new_matchers)
+            db.session.flush()
 
             # 4. create level if not null
             if campaign_copy['matchers'].level:

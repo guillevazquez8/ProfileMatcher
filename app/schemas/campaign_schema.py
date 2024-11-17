@@ -1,6 +1,8 @@
 from pydantic import BaseModel, StringConstraints, Field
 from typing import Optional, Annotated
 from datetime import datetime
+from pydantic_yaml import to_yaml_str
+import yaml
 
 
 class HasSchema(BaseModel):
@@ -28,3 +30,7 @@ class CampaignSchema(BaseModel):
     enabled: Optional[bool] = None
     last_updated: Optional[datetime] = None
     matchers: Optional[MatchersSchema] = None
+
+
+c = CampaignSchema(game="mygame", name="myname")
+c_yml = to_yaml_str(c)

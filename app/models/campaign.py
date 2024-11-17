@@ -16,17 +16,17 @@ class Campaign(db.Model, SerializerMixin):
     end_date = Column(DateTime, default=datetime.today())
     enabled = Column(Boolean, default=False)
     last_updated = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
-    matchers = db.relationship('Matchers', uselist=False)
+    matchers = db.relationship("Matchers", uselist=False)
 
 
 class Matchers(db.Model, SerializerMixin):
     __tablename__ = 'matchers'
 
     id = Column(Integer, primary_key=True)
-    campaign_id = Column(Integer, ForeignKey('campaigns.id', ondelete="CASCADE"), nullable=False)
     level = db.relationship("Level", uselist=False)
     has = db.relationship('Has', uselist=False)
     does_not_have = db.relationship('DoesNotHave', uselist=False)
+    campaign_id = Column(Integer, ForeignKey('campaigns.id', ondelete="CASCADE"), nullable=False)
 
 
 class Level(db.Model, SerializerMixin):

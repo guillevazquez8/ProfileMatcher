@@ -11,7 +11,11 @@ campaign_bp = Blueprint("campaign", __name__, url_prefix="/campaign")
 
 @campaign_bp.post("")
 @validate()
-@swag_from({'tags': ['Campaign'], 'responses': {201: {}}})
+@swag_from("app/swagger/campaign_schema.yaml")
+@swag_from({
+    'tags': ['Campaign'],
+    'responses': {201: {}}
+})
 def add_campaign():
     campaign_data = request.get_json()
     # data validation
@@ -32,14 +36,16 @@ def get_campaign_by_id(id: int):
 @swag_from({'tags': ['Campaign'], 'responses': {200: {}}})
 def get_campaigns():
     campaigns = get_all_campaigns()
-    return make_response(campaigns.to_dict())
+    campaigns_json = [campaign.to_dict() for campaign in campaigns]
+    return make_response(campaigns_json)
 
 
 @campaign_bp.get("/enabled")
 @swag_from({'tags': ['Campaign'], 'responses': {200: {}}})
 def get_campaigns_by_enabled():
     enabled_campaigns = get_enabled_campaigns()
-    return make_response(enabled_campaigns.to_dict())
+    enabled_campaigns_json = [campaign.to_dict() for campaign in enabled_campaigns]
+    return make_response(enabled_campaigns_json)
 
 
 @campaign_bp.put("/<int:id>")

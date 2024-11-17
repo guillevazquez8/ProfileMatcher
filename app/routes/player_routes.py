@@ -1,4 +1,4 @@
-from flask import Blueprint, request, make_response, jsonify
+from flask import Blueprint, request, make_response
 from app.db.player_db import *
 from app.db.campaign_db import get_enabled_campaigns, get_campaign_matchers
 from app.schemas.player_schema import PlayerSchema
@@ -12,7 +12,11 @@ player_bp = Blueprint("player", __name__, url_prefix="/player")
 
 @player_bp.post("")
 @validate()
-@swag_from({'tags': ['Player'], 'responses': {201: {}}})
+@swag_from("app/swagger/player_schema.yaml")
+@swag_from({
+    'tags': ['Player'],
+    'responses': {201: {}}
+})
 def add_player():
     player_data = request.get_json()
 

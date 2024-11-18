@@ -29,7 +29,7 @@ class Player(db.Model, SerializerMixin):
     devices = db.relationship('Device', cascade="all")
     inventory = Column(JSON)
     clan_id = Column(Integer, ForeignKey('clans.id', ondelete="SET NULL"))
-    clan = db.relationship("Clan", uselist=False)
+    clan = db.relationship("Clan", uselist=False, cascade='all')
     active_campaigns = db.relationship("Campaign", secondary='campaign_player')
 
 

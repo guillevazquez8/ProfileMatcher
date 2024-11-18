@@ -1,15 +1,30 @@
-from pydantic import BaseModel, StringConstraints
+from pydantic import BaseModel, StringConstraints, field_validator
 from typing import Optional, Annotated
 from datetime import datetime
+import re
 
 
 class HasSchema(BaseModel):
     country: Optional[list[Annotated[str, StringConstraints(max_length=2)]]] = []
     items: Optional[list[str]] = []
 
+    @field_validator('items')
+    def validate_inventory_keys(cls, value, field):
+        for item in value:
+            if not re.match(r"^item_\d+$", item):
+                raise ValueError(f"Invalid item in Matchers.Has: {item}. It must start with 'item_' and follow with a number")
+        return value
+
 
 class DoesNotHaveSchema(BaseModel):
     items: Optional[list[str]] = []
+
+    @field_validator('items')
+    def validate_inventory_keys(cls, value, field):
+        for item in value:
+            if not re.match(r"^item_\d+$", item):
+                raise ValueError(f"Invalid item in Matchers.DoesNotHave: {item}. It must start with 'item_' and follow with a number")
+        return value
 
 
 class LevelSchema(BaseModel):

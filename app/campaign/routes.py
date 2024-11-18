@@ -1,15 +1,13 @@
 from flask import Blueprint, request, make_response
-from flask_pydantic import validate
 from app.campaign.db import *
 from app.campaign.schema import CampaignSchema
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 
 campaign_bp = Blueprint("campaign", __name__, url_prefix="/campaign")
 
 
 @campaign_bp.post("")
-@validate()
 def add_campaign():
     """
     Create Campaign
@@ -78,12 +76,16 @@ def add_campaign():
       201:
         description: Campaign created
     """
-    campaign_data = request.get_json()
-    # data validation
-    validator = TypeAdapter(CampaignSchema)
-    valid_campaign = validator.validate_python(campaign_data)
-    campaign = create_campaign(dict(valid_campaign))
-    return make_response(campaign.to_dict(), 201)
+    try:
+        campaign_data = request.get_json()
+        # data validation
+        validator = TypeAdapter(CampaignSchema)
+        valid_campaign = validator.validate_python(campaign_data)
+
+        campaign = create_campaign(dict(valid_campaign))
+        return make_response(campaign.to_dict(), 201)
+    except ValidationError as e:
+        return make_response(f"Validation Error: {str(e)}", 400)
 
 
 @campaign_bp.get("/<int:id>")

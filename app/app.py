@@ -27,8 +27,10 @@ def create_app(config_class=config):
         # import routes
         from app.campaign.routes import campaign_bp
         from app.player.routes import player_bp
+        from app.init_data import init_bp
         # register blueprints
         app.register_blueprint(campaign_bp)
         app.register_blueprint(player_bp)
+        app.register_blueprint(init_bp)
 
         return app

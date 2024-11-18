@@ -1,8 +1,9 @@
 from flask import Blueprint, request, make_response
+from jinja2.lexer import newline_re
+
 from app.player.db import *
 from app.campaign.db import get_enabled_campaigns, get_campaign_matchers
 from app.player.schema import PlayerSchema
-from flask_pydantic import validate
 from pydantic import TypeAdapter
 
 
@@ -10,7 +11,6 @@ player_bp = Blueprint("player", __name__, url_prefix="/player")
 
 
 @player_bp.post("")
-@validate()
 def add_player():
     """
     Create Player
@@ -263,9 +263,10 @@ def get_player_and_update_campaigns(player_id: str):
         200:
             description: Success
     """
-
     # 1. get player
     player = get_player_by_player_id(player_id)
+    if not player:
+        return make_response(f"Player with id {player_id} does not exist", 422)
 
     # 2. get running campaigns
     enabled_campaigns = get_enabled_campaigns()
@@ -274,15 +275,20 @@ def get_player_and_update_campaigns(player_id: str):
     # compare matchers from all running campaigns with player info
     for campaign in enabled_campaigns:
         matchers = get_campaign_matchers(campaign.id)
-        # check matchers
-        conditions = [
-            lambda p: matchers.level.min <= p.level <= matchers.level.max,
-            lambda p: p.country in matchers.has.country,
-            lambda p: all(item in p.inventory for item in matchers.has.items),
-            lambda p: all(item not in p.inventory for item in matchers.does_not_have.items)
-        ]
+        if matchers:
+            # check matchers
+            conditions = [
+                lambda p: matchers.level is None or matchers.level.min is None or matchers.level.min <= p.level,
+                lambda p: matchers.level is None or matchers.level.max is None or matchers.level.max >= p.level,
+                lambda p: matchers.has is None or matchers.has.country is None or p.country in matchers.has.country,
+                lambda p: matchers.has is None or matchers.has.items is None or all(item in p.inventory for item in matchers.has.items),
+                lambda p: matchers.does_not_have is None or matchers.does_not_have.items is None or all(item not in p.inventory for item in matchers.does_not_have.items)
+            ]
 
-        # 4. if matches, update player active campaigns
-        if all(condition(player) for condition in conditions):
+            # 4. if matches, update player active campaigns
+            if all(condition(player) for condition in conditions):
+                player = update_player_campaigns(player.id, campaign)
+        else:
+            # if matchers is null, campaign is available to all players
             player = update_player_campaigns(player.id, campaign)
     return make_response(player.to_dict())

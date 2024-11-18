@@ -3,7 +3,7 @@
 This is a profile matcher for video games. 
 
 ## API Configuration
-It runs with Python 3.12. Install a venv, install requirements.txt, and then configure your database user, pw, and database name, in the config file in `config/config.py`.
+It runs with Python 3.12. Install a venv, then requirements.txt, and configure your database user, pw, and database name, in the config file in `config/config.py`.
 
 ## How to run it
 To start the API, just write `flask --app run run` in the terminal from inside the project. 

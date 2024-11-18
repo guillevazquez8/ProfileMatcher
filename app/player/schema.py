@@ -9,8 +9,10 @@ class DeviceSchema(BaseModel):
     carrier: Optional[str] = None
     firmware: Optional[str] = None
 
+
 class ClanSchema(BaseModel):
     name: str
+
 
 class PlayerSchema(BaseModel):
     credential: Optional[str] = None

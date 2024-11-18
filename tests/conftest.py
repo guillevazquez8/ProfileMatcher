@@ -1,11 +1,10 @@
 import pytest
 from app.app import create_app, db
-from app.models.player import Player
 from config import config_test
-from app.db.campaign_db import create_campaign
-from app.db.player_db import create_player
-from app.schemas.player_schema import PlayerSchema
-from app.schemas.campaign_schema import CampaignSchema
+from app.campaign.db import create_campaign
+from app.player.db import create_player
+from app.player.schema import PlayerSchema
+from app.campaign.schema import CampaignSchema
 
 
 @pytest.fixture()
@@ -69,6 +68,7 @@ def create_player_and_campaign():
     }
     player = PlayerSchema(**player_data)
     new_player = create_player(dict(player))
+
     campaign_data = {
         "game": "mygame",
         "name": "mycampaign",
@@ -92,5 +92,5 @@ def create_player_and_campaign():
         "last_updated": "2021-07-13 11:46:58Z"
     }
     campaign = CampaignSchema(**campaign_data)
-    create_campaign(dict(campaign))
-    return new_player
+    new_campaign = create_campaign(dict(campaign))
+    return new_player, new_campaign

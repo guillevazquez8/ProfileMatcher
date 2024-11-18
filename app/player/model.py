@@ -1,8 +1,8 @@
 from app.app import db
-from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy_serializer import SerializerMixin
+from app.helpers import UTCDateTime
 
 
 class Player(db.Model, SerializerMixin):
@@ -11,9 +11,9 @@ class Player(db.Model, SerializerMixin):
     id = Column(Integer, primary_key=True)
     player_id = Column(String, unique=True, nullable=False)
     credential = Column(String)
-    created = Column(DateTime, default=datetime.now())
-    modified = Column(DateTime, onupdate=datetime.now())
-    last_session = Column(DateTime)
+    created = Column(UTCDateTime)
+    modified = Column(UTCDateTime)
+    last_session = Column(UTCDateTime)
     total_spent = Column(Float)
     total_refund = Column(Float)
     total_transactions = Column(Integer)
@@ -23,12 +23,13 @@ class Player(db.Model, SerializerMixin):
     total_playtime = Column(Integer)
     country = Column(String(2))
     language = Column(String)
-    birthdate = Column(DateTime)
+    birthdate = Column(UTCDateTime)
     gender = Column(String)
     _customfield = Column(String)
-    devices = db.relationship('Device')
+    devices = db.relationship('Device', cascade="all")
     inventory = Column(JSON)
     clan_id = Column(Integer, ForeignKey('clans.id', ondelete="SET NULL"))
+    clan = db.relationship("Clan", uselist=False)
     active_campaigns = db.relationship("Campaign", secondary='campaign_player')
 
 
@@ -50,19 +51,8 @@ class Device(db.Model, SerializerMixin):
     player_id = Column(Integer, db.ForeignKey('players.id', ondelete="CASCADE"), nullable=False)
 
 
-"""class Inventory(db.Model, SerializerMixin):
-    __tablename__ = 'inventories'
-
-    id = Column(Integer, primary_key=True)
-    cash = Column(Integer)
-    coins = Column(Integer)
-    items = Column(JSON)
-    player_id = Column(Integer, ForeignKey('players.id', ondelete="CASCADE"), nullable=False)"""
-
-
 class Clan(db.Model, SerializerMixin):
     __tablename__ = 'clans'
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
-    players = db.relationship('Player')

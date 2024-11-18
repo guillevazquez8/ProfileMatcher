@@ -12,16 +12,20 @@ I've prepared some documentation to interact with the API, you can find it in `l
 
 I've also included some tests that you can use to check that everything is working as it should.
 
-
 ## Endpoints
 I've included CRUD endpoints for Player and Campaign, apart from the key endpoint of the task: `/get_client_config/<string:player_id>`
 
 But before trying this endpoint you need to have some data in the database. I've made the endpoint `/init_data` to initialize a player and a campaign with just sending an empty POST.
-After that, by calling the `/get_client_config/{player_id}` endpoint it updates the player with all running campaigns where this player suits its matchers. 
-I get the running campaigns with the endpoint `/campaign/enabled`, which returns all campaigns with enabled=True.
+
+After that, by calling the endpoint `/get_client_config/{player_id}`, it updates the player with all running campaigns where the player suits its matchers. 
+I get the running campaigns with the endpoint `/campaign/enabled`, which returns all campaigns with enabled=true.
 
 
 ## Some details regarding the API's functioning
 
-I've organized the code in just two folders, Player and Campaign. I've done this for the sake of simplycity.
+I've organized the code in just two folders, Player and Campaign. I've done this for the sake of simplycity, even though every table could have their own folder.
+
+I've included data entry validation with pydantic.
+
+I've included a class UTCDatetime in `app/helpers.py` which saves all datetimes introduced in the database in UTC, and returns them in the same way ending in "Z" to indicate zero timezone, as I've noticed the data of the task was being written like this.
   

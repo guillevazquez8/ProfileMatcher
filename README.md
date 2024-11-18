@@ -17,7 +17,7 @@ I've also included some tests that you can use to check that everything is worki
 I've included CRUD endpoints for Player and Campaign, apart from the key endpoint of the task: `/get_client_config/<string:player_id>`
 
 But before trying this endpoint you need to have some data in the database. I've made the endpoint `/init_data` to initialize a player and a campaign with just sending an empty POST.
-After that, by calling the /get_client_config/{player_id} endpoint it updates the player with all running campaigns. 
+After that, by calling the /get_client_config/{player_id} endpoint it updates the player with all running campaigns where this player suits its matchers. 
 I get the running campaigns with the endpoint `/campaign/enabled`, which returns all campaigns with enabled=True.
 
 

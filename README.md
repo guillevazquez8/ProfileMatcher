@@ -23,9 +23,9 @@ I get the running campaigns with the endpoint `/campaign/enabled`, which returns
 
 ## Some details regarding the API's functioning
 
-I've organized the code in just two folders, Player and Campaign. I've done this for the sake of simplycity, even though every table could have their own folder.
+- I've organized the code in just two folders, Player and Campaign. I've done this for the sake of simplycity, even though every table could have their own folder.
 
-I've included data entry validation with pydantic.
+- I've included data entry validation with pydantic.
 
-I've included a class UTCDatetime in `app/helpers.py` which saves all datetimes introduced in the database in UTC, and returns them in the same way ending in "Z" to indicate zero timezone, as I've noticed the data of the task was being written like this.
+- I've included a class UTCDatetime in `app/helpers.py` which saves all datetimes introduced in the database in UTC, and returns them in the same way ending in "Z" to indicate zero timezone, as I've noticed the data of the task was being written like this.
   

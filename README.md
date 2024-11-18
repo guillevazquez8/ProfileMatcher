@@ -7,8 +7,11 @@ It runs with Python 3.12. Create a venv, install requirements.txt, and configure
 
 ## How to run it
 To start the API, just write `flask --app run run` in the terminal from inside the project. 
+
 I've prepared some documentation to interact with the API, you can find it in `localhost:5000/apidocs`.
+
 I've also included some tests that you can use to check that everything is working as it should.
+
 
 ## Endpoints
 I've included CRUD endpoints for Player and Campaign, apart from the key endpoint of the task: `/get_client_config/<string:player_id>`

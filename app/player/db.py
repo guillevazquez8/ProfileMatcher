@@ -64,6 +64,12 @@ def get_all_players():
     return all_players
 
 
+def get_all_players_player_id():
+    all_players = get_all_players()
+    player_id_list = [{"player_id": player.player_id} for player in all_players]
+    return player_id_list
+
+
 def get_player_by_player_id(player_id: str):
     player = Player.query.filter_by(player_id=player_id).first()
     return player

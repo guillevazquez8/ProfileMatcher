@@ -1,10 +1,9 @@
 from flask import Blueprint, request, make_response
-from jinja2.lexer import newline_re
-
+from sqlalchemy.exc import IntegrityError
 from app.player.db import *
 from app.campaign.db import get_enabled_campaigns, get_campaign_matchers
 from app.player.schema import PlayerSchema
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 
 player_bp = Blueprint("player", __name__, url_prefix="/player")
@@ -76,7 +75,7 @@ def add_player():
                     type: string
             inventory:
               type: object
-              additionalProperties:
+              items:
                 type: integer
             clan:
               type: object
@@ -91,16 +90,23 @@ def add_player():
       201:
         description: Player created
     """
-    player_data = request.get_json()
+    try:
+        player_data = request.get_json()
 
-    # data validation
-    validator = TypeAdapter(PlayerSchema)
-    valid_player = validator.validate_python(player_data)
-    valid_player_dict = dict(valid_player)
-    valid_player_dict['_customfield'] = player_data['_customfield']
+        # data validation
+        validator = TypeAdapter(PlayerSchema)
+        valid_player = validator.validate_python(player_data)
+        valid_player_dict = dict(valid_player)
+        valid_player_dict['_customfield'] = player_data['_customfield']
 
-    player = create_player(valid_player_dict)
-    return make_response(player.to_dict(), 201)
+        player = create_player(valid_player_dict)
+        return make_response(player.to_dict(), 201)
+    except ValidationError as e:
+        return make_response(f"Validation Error: {str(e)}", 400)
+    except IntegrityError as e:
+        return make_response(f"Integrity Error: {str(e)}", 409)
+    except AttributeError as e:
+        return make_response(f"Bad Request: {e}", 400)
 
 
 @player_bp.get("/<int:id>")
@@ -137,6 +143,21 @@ def get_players():
     players = get_all_players()
     players_json = [player.to_dict() for player in players]
     return make_response(players_json)
+
+
+@player_bp.get("/all_player_id")
+def get_players_player_id():
+    """
+    Get player_id from all players
+    ---
+    tags:
+        - Player
+    responses:
+        200:
+            description: Success
+    """
+    players_id_list = get_all_players_player_id()
+    return make_response(players_id_list)
 
 
 @player_bp.put("/<int:id>")

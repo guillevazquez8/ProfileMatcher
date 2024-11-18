@@ -1,4 +1,5 @@
 from flask import Blueprint, request, make_response
+from sqlalchemy.exc import IntegrityError
 from app.campaign.db import *
 from app.campaign.schema import CampaignSchema
 from pydantic import TypeAdapter, ValidationError
@@ -86,6 +87,10 @@ def add_campaign():
         return make_response(campaign.to_dict(), 201)
     except ValidationError as e:
         return make_response(f"Validation Error: {str(e)}", 400)
+    except IntegrityError as e:
+        return make_response(f"Integrity Error: {str(e)}", 409)
+    except AttributeError as e:
+        return make_response(f"Bad Request: {e}", 400)
 
 
 @campaign_bp.get("/<int:id>")

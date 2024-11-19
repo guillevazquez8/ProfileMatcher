@@ -13,13 +13,12 @@ I've prepared some documentation to interact with the API, you can find it in `l
 I've also included some tests that you can use to check that everything is working as it should.
 
 ## Endpoints
-I've included CRUD endpoints for Player and Campaign, apart from the key endpoint of the task: `/get_client_config/<string:player_id>`
 
-But before trying this endpoint you need to have some data in the database. I've made the endpoint `/init_data` to initialize a player and a campaign with just sending an empty POST.
+- `/get_client_config/<string:player_id>`: it updates the player with all running campaigns where the player suits its matchers. I get the running campaigns with the endpoint `/campaign/enabled`, which returns all campaigns with enabled=true.
+  
+- `/init_data`: it initializes a player and a campaign with just sending an empty POST, in order to have some data in the database before testing the first endpoint.
 
-After that, by calling the endpoint `/get_client_config/{player_id}`, it updates the player with all running campaigns where the player suits its matchers. 
-I get the running campaigns with the endpoint `/campaign/enabled`, which returns all campaigns with enabled=true.
-
+- CRUD endpoints for Player and Campaign.
 
 ## Some details regarding the API's functioning
 

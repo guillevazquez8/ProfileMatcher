@@ -10,7 +10,7 @@ To start the API, just write `flask --app run run` in the terminal from inside t
 
 I've prepared some documentation to interact with the API, you can find it in `localhost:5000/apidocs`.
 
-I've also included some tests that you can use to check that everything is working as it should.
+I've also included some tests that you can use to check that everything is working as it should. For this you'll need to update `config/config_test.py` with your testing database too.
 
 ## Endpoints
 

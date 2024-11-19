@@ -22,7 +22,7 @@ I've also included some tests that you can use to check that everything is worki
 
 ## Some details regarding the API's functioning
 
-- The code is organized in two folders, Player and Campaign, each with their model, schema, db, and routes layers. I've done this for the sake of simplycity, even though every table could have their own folder.
+- The code is organized in two folders, Player and Campaign, each with their model, schema, db, and routes layers. I've done this for the sake of simplicity, even though every table could have their own folder.
 
 - Data entry validation is done with pydantic.
 

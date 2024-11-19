@@ -26,7 +26,7 @@ I've also included some tests that you can use to check that everything is worki
 
 - Data entry validation is done with pydantic.
 
-- There is a class UTCDatetime in `app/helpers.py` which saves all datetimes introduced in the database in UTC, and returns them in the same way ending in "Z" to indicate zero timezone, as I've noticed the data of the task was being written like this.
+- There is a class UTCDatetime in `app/helpers.py` which saves all datetimes introduced in the database in UTC, and returns them in the same way ending in "Z" to indicate zero timezone, as I've noticed the data of the task was written in ths format.
 
-- All endpoints include docstring under them, just for documentation purposes.
+- All endpoints include docstrings in yaml format under them, just for documentation purposes.
   

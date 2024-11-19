@@ -1,5 +1,4 @@
 from werkzeug.exceptions import NotFound
-
 from app.player.model import Player, Device, Clan
 from app.app import db
 import uuid
@@ -21,16 +20,16 @@ def create_player(player_data: dict):
         db.session.add(new_player)
         db.session.flush()
 
-        # 2. create clan if not null
+        # 3. create clan if not null
         if player_copy['clan']:
             new_clan = create_clan(player_copy['clan'].name)
             new_player.clan_id = new_clan.id
 
-        # 3. create device if not null
+        # 4. create device if not null
         for device in player_copy['devices']:
             create_device(dict(device), new_player.id)
 
-        # 4. commit all changes to db
+        # 5. commit all changes to db
         db.session.commit()
         return new_player
     except SQLAlchemyError as e:
@@ -94,14 +93,16 @@ def update_player(id: int, data: dict):
 
         # 3. devices is nested, it needs to be created separatedly
         if 'devices' in update_data:
-            update_data['devices']['player_id'] = id
-            devices = update_data.pop('devices')
-            new_device = Device(**devices)
-            db.session.add(new_device)
+            for device in update_data['devices']:
+                device = dict(device)
+                device['player_id'] = id
+                new_device = Device(**device)
+                db.session.add(new_device)
+            update_data.pop('devices')
 
         # 4. if clan, check if name exists, if it does add its id, if it does not create it
         if "clan" in update_data:
-            clan_name = update_data.pop('clan')['name']
+            clan_name = update_data.pop('clan').name
             clan = Clan.query.filter_by(name=clan_name).first()
             if not clan:
                 clan = create_clan(clan_name)

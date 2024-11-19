@@ -56,5 +56,4 @@ class CampaignUpdateSchema(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     enabled: Optional[bool] = None
-    last_updated: Optional[datetime] = None
     matchers: Optional[MatchersSchema] = None

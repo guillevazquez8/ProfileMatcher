@@ -2,7 +2,7 @@ from flask import Blueprint, request, make_response
 from sqlalchemy.exc import IntegrityError
 from app.player.db import *
 from app.campaign.db import get_enabled_campaigns, get_campaign_matchers
-from app.player.schema import PlayerSchema
+from app.player.schema import PlayerSchema, PlayerUpdateSchema
 from pydantic import TypeAdapter, ValidationError
 
 
@@ -260,6 +260,7 @@ def update_player_by_id(id: int):
                 type: array
                 items:
                   type: integer
+                example: []
     responses:
         200:
             description: Success
@@ -268,7 +269,7 @@ def update_player_by_id(id: int):
         player_data = request.get_json()
 
         # data validation
-        validator = TypeAdapter(PlayerSchema)
+        validator = TypeAdapter(PlayerUpdateSchema)
         valid_player_update = validator.validate_python(player_data)
         valid_player_dict = dict(valid_player_update)
 

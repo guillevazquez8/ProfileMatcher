@@ -46,7 +46,6 @@ class TestPlayer:
         assert resp.status_code == 201
         assert resp.json['credential'] == player['credential']
         assert resp.json['created'] == player['created']
-        assert resp.json['modified'] == player['modified']
         assert resp.json['last_session'] == player['last_session']
         assert resp.json['total_spent'] == player['total_spent']
         assert resp.json['total_refund'] == player['total_refund']
@@ -95,11 +94,11 @@ class TestPlayer:
     def test_update_player_device(self, client, create_player_and_campaign):
 
         data = {
-            "devices": {
+            "devices": [{
                 "model": "xiaomi redmi note 11",
                 "carrier": "orange",
                 "firmware": "321"
-            }
+            }]
         }
 
         player_id = create_player_and_campaign[0].id
@@ -107,9 +106,9 @@ class TestPlayer:
         resp = client.put(f"/player/{player_id}", json=data, headers=client.headers)
 
         assert resp.status_code == 200
-        data['devices']['player_id'] = player_id
-        data['devices']['id'] = 2
-        assert data['devices'] in resp.json['devices']
+        data['devices'][0]['player_id'] = player_id
+        data['devices'][0]['id'] = 2
+        assert data['devices'][0] in resp.json['devices']
 
 
     def test_update_player_clan(self, client, create_player_and_campaign):

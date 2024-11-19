@@ -1,5 +1,4 @@
 from werkzeug.exceptions import NotFound
-
 from app.app import db
 from app.campaign.model import Campaign, Matchers, Has, DoesNotHave, Level
 from sqlalchemy.exc import SQLAlchemyError
@@ -115,7 +114,7 @@ def update_campaign(id: int, data: dict):
 
         # 3. matchers is nested, it needs to be updated separatedly
         if 'matchers' in data:
-            matchers = update_data.pop('matchers')
+            matchers = dict(update_data.pop('matchers'))
             if campaign.matchers:
                 update_matchers(campaign, matchers)
             else:
@@ -135,31 +134,29 @@ def update_campaign(id: int, data: dict):
 
 
 def update_matchers(campaign: Campaign, matchers: dict):
-    if 'level' in matchers:
+
+    if 'level' in matchers and matchers['level']:
         # if this campaign already includes levels, update them, else, create them
         if campaign.matchers.level:
-            for k, v in matchers['level'].items():
+            for k, v in dict(matchers['level']).items():
                 setattr(campaign.matchers.level, k, v)
             db.session.add(campaign.matchers.level)
         else:
             create_level(matchers['level'], campaign.matchers.id)
-    if 'has' in matchers:
+
+    if 'has' in matchers and matchers['has']:
         # if this campaign already includes has, update them, else, create them
         if campaign.matchers.has:
-            for k, v in matchers['has'].items():
-                value = campaign.to_dict()['matchers']['has'][k]
-                value.append(each_v for each_v in v if each_v not in value)
-                setattr(campaign.matchers.has, k, value)
+            for k, v in dict(matchers['has']).items():
+                setattr(campaign.matchers.has, k, v)
             db.session.add(campaign.matchers.has)
         else:
             create_has(matchers['has'], campaign.matchers.id)
-    if 'does_not_have' in matchers:
+
+    if 'does_not_have' in matchers and matchers['does_not_have']:
         # if this campaign already includes does_not_have, update them, else, create them
         if campaign.matchers.does_not_have:
-            for k, v in matchers['does_not_have'].items():
-                value = campaign.to_dict()['matchers']['does_not_have'][k]
-                value.append(each_v for each_v in v if each_v not in value)
-                setattr(campaign.matchers.does_not_have, k, value)
+            campaign.matchers.does_not_have.items = matchers['does_not_have'].items
             db.session.add(campaign.matchers.does_not_have)
         else:
             create_does_not_have(matchers['does_not_have'], campaign.matchers.id)

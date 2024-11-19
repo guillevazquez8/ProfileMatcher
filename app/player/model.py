@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy_serializer import SerializerMixin
 from app.helpers import UTCDateTime
+from datetime import datetime, timezone
 
 
 class Player(db.Model, SerializerMixin):
@@ -11,13 +12,13 @@ class Player(db.Model, SerializerMixin):
     id = Column(Integer, primary_key=True)
     player_id = Column(String, unique=True, nullable=False)
     credential = Column(String)
-    created = Column(UTCDateTime)
-    modified = Column(UTCDateTime)
-    last_session = Column(UTCDateTime)
+    created = Column(UTCDateTime, default=datetime.now(timezone.utc))
+    modified = Column(UTCDateTime, onupdate=datetime.now(timezone.utc))
+    last_session = Column(UTCDateTime, default=datetime.now(timezone.utc))
     total_spent = Column(Float)
     total_refund = Column(Float)
     total_transactions = Column(Integer)
-    last_purchase = Column(DateTime)
+    last_purchase = Column(UTCDateTime)
     level = Column(Integer)
     xp = Column(Integer)
     total_playtime = Column(Integer)

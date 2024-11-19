@@ -1,6 +1,6 @@
 from sqlalchemy_serializer import SerializerMixin
 from app.app import db
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY
 from app.helpers import UTCDateTime
@@ -13,10 +13,10 @@ class Campaign(db.Model, SerializerMixin):
     game = Column(String, nullable=False)
     name = Column(String, nullable=False)
     priority = Column(Float, default=0.0)
-    start_date = Column(UTCDateTime, default=datetime.now())
-    end_date = Column(UTCDateTime, default=datetime.now())
+    start_date = Column(UTCDateTime, default=datetime.now(timezone.utc))
+    end_date = Column(UTCDateTime, default=datetime.now(timezone.utc))
     enabled = Column(Boolean, default=False)
-    last_updated = Column(UTCDateTime, onupdate=datetime.now())
+    last_updated = Column(UTCDateTime, onupdate=datetime.now(timezone.utc))
     matchers = db.relationship("Matchers", uselist=False, cascade="all")
 
 

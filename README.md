@@ -1,6 +1,6 @@
 # Guille's Profile Matcher
 
-This is a profile matcher for video games. 
+Welcome to Guille's Porfile Matcher! A matcher for video games. 
 
 ## API Configuration
 It runs with Python 3.12. Create a venv, install requirements.txt, and configure your database user, password, and database name in the config file in `config/config.py`.

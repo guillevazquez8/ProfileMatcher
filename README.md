@@ -22,11 +22,11 @@ I've also included some tests that you can use to check that everything is worki
 
 ## Some details regarding the API's functioning
 
-- The code is organized in two folders, Player and Campaign, each with their model, schema, db, and routes layers. I've done this for the sake of simplicity, even though every table could have their own folder.
+- The code is organized in two folders, Player and Campaign, each with their model, schema, db, and routes layers. I've done this for the sake of simplicity, even though every table could have their own set of layers.
 
 - Data entry validation is done with pydantic.
 
-- There is a class UTCDatetime in `app/helpers.py` which saves all datetimes introduced in the database in UTC, and returns them in the same way ending in "Z" to indicate zero timezone, as I've noticed the data of the task was written in ths format.
+- There is a class UTCDatetime in `app/helpers.py` which saves all datetimes introduced in the database in UTC, and returns them in the same way ending in "Z" to indicate zero timezone, as I've noticed the data of the task was written in this format.
 
-- All endpoints include docstrings in yaml format under them, just for documentation purposes.
+- All endpoints include docstrings in yaml format under them for documentation purposes.
   

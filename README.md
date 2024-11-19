@@ -2,7 +2,7 @@
 
 Welcome to Guille's Porfile Matcher! A matcher for video games between the player and available campaigns. 
 
-## API Configuration
+## API setup
 It runs with Python 3.12. Create a venv, install requirements.txt, and configure your database user, password, and database name in the config file in `config/config.py`.
 
 ## How to run it

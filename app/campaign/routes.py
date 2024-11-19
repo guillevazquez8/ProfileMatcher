@@ -1,7 +1,7 @@
 from flask import Blueprint, request, make_response
 from sqlalchemy.exc import IntegrityError
 from app.campaign.db import *
-from app.campaign.schema import CampaignSchema
+from app.campaign.schema import CampaignSchema, CampaignUpdateSchema
 from pydantic import TypeAdapter, ValidationError
 
 
@@ -62,10 +62,12 @@ def add_campaign():
                       items:
                         type: string
                         maxLength: 2
+                        example: "ES"
                     items:
                       type: array
                       items:
                         type: string
+                        example: item_1
                 does_not_have:
                   type: object
                   properties:
@@ -73,6 +75,7 @@ def add_campaign():
                       type: array
                       items:
                         type: string
+                        example: item_2
     responses:
       201:
         description: Campaign created
@@ -109,8 +112,11 @@ def get_campaign_by_id(id: int):
         200:
             description: Success
     """
-    campaign = get_campaign(id)
-    return make_response(campaign.to_dict())
+    try:
+        campaign = get_campaign(id)
+        return make_response(campaign.to_dict())
+    except NotFound:
+        return make_response(f"Campaign with id {id} does not exist", 404)
 
 
 @campaign_bp.get("/all")
@@ -198,10 +204,12 @@ def update_campaign_by_id(id: int):
                         items:
                           type: string
                           maxLength: 2
+                          example: "ES"
                       items:
                         type: array
                         items:
                           type: string
+                          example: "item_1"
                   does_not_have:
                     type: object
                     properties:
@@ -209,13 +217,23 @@ def update_campaign_by_id(id: int):
                         type: array
                         items:
                           type: string
+                          example: item_2
     responses:
         200:
             description: Success
     """
-    data = request.get_json()
-    campaign = update_campaign(id, data)
-    return make_response(campaign.to_dict())
+    try:
+        campaign_data = request.get_json()
+        #data validation
+        validator = TypeAdapter(CampaignUpdateSchema)
+        valid_campaign_update = validator.validate_python(campaign_data)
+
+        campaign = update_campaign(id, dict(valid_campaign_update))
+        return make_response(campaign.to_dict())
+    except NotFound:
+        return make_response(f"Campaign with id {id} does not exist", 404)
+    except ValidationError as e:
+        return make_response(f"Validation Error: {str(e)}", 400)
 
 
 @campaign_bp.delete("/<int:id>")
@@ -234,5 +252,9 @@ def delete_campaign_by_id(id: int):
         200:
             description: Success
     """
-    id = delete_campaign(id)
-    return make_response({"campaign_removed": id})
+    try:
+        id = delete_campaign(id)
+        return make_response({"campaign_removed": id})
+    except NotFound:
+        return make_response(f"Campaign with id {id} does not exist", 404)
+

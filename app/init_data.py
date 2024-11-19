@@ -84,7 +84,7 @@ def init_data():
         }
         campaign = CampaignSchema(**campaign_data)
         new_campaign = create_campaign(dict(campaign))
-    except IntegrityError as e:
+    except IntegrityError:
         return make_response("Data is already in the db", 409)
 
     return make_response({

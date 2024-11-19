@@ -1,3 +1,5 @@
+from werkzeug.exceptions import NotFound
+
 from app.player.model import Player, Device, Clan
 from app.app import db
 import uuid
@@ -56,6 +58,8 @@ def create_device(device: dict, player_id: int):
 
 def get_player(id: int):
     player = Player.query.get(id)
+    if not player:
+        raise NotFound
     return player
 
 
@@ -79,23 +83,40 @@ def update_player(id: int, data: dict):
     try:
         # 1. get player
         player = get_player(id)
-        # 2. devices is nested, it needs to be created separatedly
-        if 'devices' in data:
-            data['devices']['player_id'] = id
-            devices = data.pop('devices')
+        if not player:
+            raise NotFound
+
+        # 2. delete null fields
+        update_data = data.copy()
+        for k in data:
+            if not data[k]:
+                update_data.pop(k)
+
+        # 3. devices is nested, it needs to be created separatedly
+        if 'devices' in update_data:
+            update_data['devices']['player_id'] = id
+            devices = update_data.pop('devices')
             new_device = Device(**devices)
             db.session.add(new_device)
-        if "clan" in data:
-            clan_name = data.pop('clan')['name']
+
+        # 4. if clan, check if name exists, if it does add its id, if it does not create it
+        if "clan" in update_data:
+            clan_name = update_data.pop('clan')['name']
             clan = Clan.query.filter_by(name=clan_name).first()
             if not clan:
                 clan = create_clan(clan_name)
-            data['clan_id'] = clan.id
-        # 3. check fields in data and update player accordingly
-        for key, value in data.items():
+            update_data['clan_id'] = clan.id
+
+        if "inventory" in update_data and player.inventory:
+            # if player has inventory, update with introduced fields
+            player.inventory = update_data['inventory']
+
+        # 5. check fields in data and update player accordingly
+        for key, value in update_data.items():
             if hasattr(player, key):
                 setattr(player, key, value)
-        # 4. commit changes to db
+
+        # 6. commit changes to db
         db.session.commit()
         return player
     except SQLAlchemyError as e:
@@ -106,6 +127,8 @@ def update_player(id: int, data: dict):
 def delete_player(id: int):
     try:
         player = get_player(id)
+        if not player:
+            raise NotFound
         db.session.delete(player)
         db.session.commit()
         return id

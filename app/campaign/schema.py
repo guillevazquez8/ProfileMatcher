@@ -47,3 +47,14 @@ class CampaignSchema(BaseModel):
     enabled: Optional[bool] = None
     last_updated: Optional[datetime] = None
     matchers: Optional[MatchersSchema] = None
+
+
+class CampaignUpdateSchema(BaseModel):
+    game: Optional[str] = None
+    name: Optional[str] = None
+    priority: Optional[float] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    enabled: Optional[bool] = None
+    last_updated: Optional[datetime] = None
+    matchers: Optional[MatchersSchema] = None

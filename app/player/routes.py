@@ -53,6 +53,7 @@ def add_player():
             country:
               type: string
               maxLength: 2
+              example: "ES"
             language:
               type: string
             birthdate:
@@ -75,17 +76,25 @@ def add_player():
                     type: string
             inventory:
               type: object
-              items:
-                type: integer
+              properties:
+                cash:
+                  type: integer
+                coins:
+                  type: integer
+                item_1:
+                  type: integer
+              example: {"cash": 100, "coins": 100, "item_1": 1}
             clan:
               type: object
               properties:
                 name:
                   type: string
+                  example: myclan
             active_campaigns:
               type: array
               items:
-                type: integer
+                type: object
+              example: []
     responses:
       201:
         description: Player created
@@ -125,8 +134,11 @@ def get_player_by_id(id: int):
         200:
             description: Success
     """
-    player = get_player(id)
-    return make_response(player.to_dict())
+    try:
+        player = get_player(id)
+        return make_response(player.to_dict())
+    except NotFound:
+        return make_response(f"Player with id {id} does not exist", 404)
 
 
 @player_bp.get("/all")
@@ -206,6 +218,7 @@ def update_player_by_id(id: int):
               country:
                 type: string
                 maxLength: 2
+                example: "ES"
               language:
                 type: string
               birthdate:
@@ -228,8 +241,16 @@ def update_player_by_id(id: int):
                       type: string
               inventory:
                 type: object
-                additionalProperties:
-                  type: integer
+                properties:
+                  cash:
+                    type: integer
+                    example: 100
+                  coins:
+                    type: integer
+                    example: 100
+                  item_1:
+                    type: integer
+                    example: 100
               clan:
                 type: object
                 properties:
@@ -243,9 +264,20 @@ def update_player_by_id(id: int):
         200:
             description: Success
     """
-    data = request.get_json()
-    player = update_player(id, data)
-    return make_response(player.to_dict())
+    try:
+        player_data = request.get_json()
+
+        # data validation
+        validator = TypeAdapter(PlayerSchema)
+        valid_player_update = validator.validate_python(player_data)
+        valid_player_dict = dict(valid_player_update)
+
+        player = update_player(id, valid_player_dict)
+        return make_response(player.to_dict())
+    except NotFound:
+        return make_response(f"Player with id {id} does not exist", 404)
+    except ValidationError as e:
+        return make_response(f"Validation Error: {str(e)}", 400)
 
 
 @player_bp.delete("/<int:id>")
@@ -264,8 +296,11 @@ def delete_player_by_id(id: int):
         200:
             description: Success
     """
-    id = delete_player(id)
-    return make_response({"player_removed": id})
+    try:
+        id = delete_player(id)
+        return make_response({"player_removed": id})
+    except NotFound:
+        return make_response(f"Player with id {id} does not exist", 404)
 
 
 @player_bp.get("/get_client_config/<string:player_id>")
@@ -287,7 +322,7 @@ def get_player_and_update_campaigns(player_id: str):
     # 1. get player
     player = get_player_by_player_id(player_id)
     if not player:
-        return make_response(f"Player with id {player_id} does not exist", 422)
+        return make_response(f"Player with id {player_id} does not exist", 404)
 
     # 2. get running campaigns
     enabled_campaigns = get_enabled_campaigns()

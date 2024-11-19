@@ -1,3 +1,5 @@
+from werkzeug.exceptions import NotFound
+
 from app.app import db
 from app.campaign.model import Campaign, Matchers, Has, DoesNotHave, Level
 from sqlalchemy.exc import SQLAlchemyError
@@ -78,6 +80,8 @@ def create_does_not_have(does_not_have: dict, matcher_id: int):
 
 def get_campaign(campaign_id):
     campaign = Campaign.query.get(campaign_id)
+    if not campaign:
+        raise NotFound
     return campaign
 
 
@@ -100,21 +104,29 @@ def update_campaign(id: int, data: dict):
     try:
         # 1. get campaign
         campaign = get_campaign(id)
+        if not campaign:
+            raise NotFound
 
-        # 2. matchers is nested, it needs to be updated separatedly
+        # 2. delete null fields
+        update_data = data.copy()
+        for k in data:
+            if not data[k]:
+                update_data.pop(k)
+
+        # 3. matchers is nested, it needs to be updated separatedly
         if 'matchers' in data:
-            matchers = data.pop('matchers')
+            matchers = update_data.pop('matchers')
             if campaign.matchers:
                 update_matchers(campaign, matchers)
             else:
                 create_matchers(matchers, campaign.id)
 
-        # 3. check fields in data and update campaign accordingly
-        for key, value in data.items():
+        # 4. check fields in data and update campaign accordingly
+        for key, value in update_data.items():
             if hasattr(campaign, key):
                 setattr(campaign, key, value)
 
-        # 4. commit changes to db
+        # 5. commit changes to db
         db.session.commit()
         return campaign
     except SQLAlchemyError as e:
@@ -132,14 +144,32 @@ def update_matchers(campaign: Campaign, matchers: dict):
         else:
             create_level(matchers['level'], campaign.matchers.id)
     if 'has' in matchers:
-        create_level(matchers['level'], campaign.matchers.id)
+        # if this campaign already includes has, update them, else, create them
+        if campaign.matchers.has:
+            for k, v in matchers['has'].items():
+                value = campaign.to_dict()['matchers']['has'][k]
+                value.append(each_v for each_v in v if each_v not in value)
+                setattr(campaign.matchers.has, k, value)
+            db.session.add(campaign.matchers.has)
+        else:
+            create_has(matchers['has'], campaign.matchers.id)
     if 'does_not_have' in matchers:
-        create_level(matchers['level'], campaign.matchers.id)
+        # if this campaign already includes does_not_have, update them, else, create them
+        if campaign.matchers.does_not_have:
+            for k, v in matchers['does_not_have'].items():
+                value = campaign.to_dict()['matchers']['does_not_have'][k]
+                value.append(each_v for each_v in v if each_v not in value)
+                setattr(campaign.matchers.does_not_have, k, value)
+            db.session.add(campaign.matchers.does_not_have)
+        else:
+            create_does_not_have(matchers['does_not_have'], campaign.matchers.id)
 
 
 def delete_campaign(id: int):
     try:
         campaign = get_campaign(id)
+        if not campaign:
+            raise NotFound
         db.session.delete(campaign)
         db.session.commit()
         return id
